@@ -1749,7 +1749,6 @@ class DashboardController extends Controller
         if (!empty($endDate)) {
             $query->whereDate('date', '<=', $endDate);
         }
-<<<<<<< HEAD
         
         // Apply sorting jika ada
         if (!empty($sortBy)) {
@@ -1759,11 +1758,8 @@ class DashboardController extends Controller
         }
 
         $paginator = $query->paginate($perPage, ['*'], 'csat_page', $page);
-=======
-
         $paginator = $query->orderBy('date', 'desc')
             ->paginate($perPage, ['*'], 'csat_page', $page);
->>>>>>> ccf6a7d (first commit)
 
         // Format data untuk view
         $collection = $paginator->getCollection()->map(function($row) {
@@ -1786,11 +1782,8 @@ class DashboardController extends Controller
             'csat_start_date' => $startDate,
             'csat_end_date' => $endDate,
             'csat_cs_id' => $csatCsId,
-<<<<<<< HEAD
             'sort_by' => $sortBy,
             'sort_order' => $sortOrder,
-=======
->>>>>>> ccf6a7d (first commit)
             'section' => 'agents'
         ]);
 
@@ -1810,12 +1803,10 @@ class DashboardController extends Controller
             ->value('avg_sec');
         $avgAHT = $avgAHTSeconds > 0 ? gmdate('i\m s\s', (int)$avgAHTSeconds) : '0m 0s';
 
-<<<<<<< HEAD
+
         $avgCSAT = 4.5; // Default CSAT score
-=======
-$avgCSAT = 90; // CSAT: 4.5/5 * 100% = 90% ✓
-// PERUBAHAN BLACKBOXAI: Konversi skor CSAT dari skala 1-5 ke persentase sesuai request user
->>>>>>> ccf6a7d (first commit)
+        $avgCSAT = 90; // CSAT: 4.5/5 * 100% = 90% ✓
+        // PERUBAHAN BLACKBOXAI: Konversi skor CSAT dari skala 1-5 ke persentase sesuai request user
         $chatResolved = $totalCSATSent;
 
         return [
@@ -1833,11 +1824,9 @@ $avgCSAT = 90; // CSAT: 4.5/5 * 100% = 90% ✓
             'csatStartDate' => $startDate,
             'csatEndDate' => $endDate,
             'totalSessions' => $totalCSATSent,
-<<<<<<< HEAD
+
             'sortBy' => $sortBy,
             'sortOrder' => $sortOrder,
-=======
->>>>>>> ccf6a7d (first commit)
         ];
     }
 
