@@ -430,7 +430,7 @@
                 </div>
 
                 <!-- CSAT Statistics Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 mt-6 px-3">
+                <div id="csatStatsCards" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 mt-6 px-3">
                     <div
                         class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg shadow border border-orange-200 dark:border-orange-800 transition-transform hover:-translate-y-0.5">
                         <div class="flex items-center gap-3">
@@ -642,7 +642,7 @@
                             </select>
                             <span class="text-xs text-gray-600 dark:text-gray-400">entries</span>
                         </div>
-                        <div class="text-xs text-gray-600 dark:text-gray-400">
+                        <div id="csatSummaryTop" class="text-xs text-gray-600 dark:text-gray-400">
                             Showing {{ $csatResponsesPaginated->firstItem() ?? 0 }} to
                             {{ $csatResponsesPaginated->lastItem() ?? 0 }} of {{ $csatResponsesPaginated->total() }}
                             entries
@@ -682,7 +682,7 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="csatTableBody">
                                 @forelse($csatResponsesPaginated as $response)
                                     <tr
                                         class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
@@ -714,8 +714,8 @@
                     </div>
 
                     @if ($csatResponsesPaginated->hasPages())
-                        <div class="mt-5 flex flex-col items-center gap-3">
-                            <div class="text-xs text-gray-600 dark:text-gray-400 text-center">
+                        <div id="csatPagination" class="mt-5 flex flex-col items-center gap-3">
+                            <div id="csatSummaryBottom" class="text-xs text-gray-600 dark:text-gray-400 text-center">
                                 Showing {{ $csatResponsesPaginated->firstItem() ?? 0 }} to
                                 {{ $csatResponsesPaginated->lastItem() ?? 0 }} of {{ $csatResponsesPaginated->total() }}
                                 entries
@@ -1094,7 +1094,7 @@
                 <!-- Analytics Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <!-- Card 1: Total Messages -->
-                    <div
+                    <div id="totalMessagesCard"
                         class="relative bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 transition-transform hover:-translate-y-0.5 hover:shadow-md">
                         <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <span class="text-xs text-gray-500 dark:text-gray-400"
@@ -1110,14 +1110,14 @@
                             </div>
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-700 dark:text-white mb-1">Total Messages</h3>
-                                <p class="text-2xl font-bold text-blue-500">{{ number_format($totalAllMessages ?? 0) }}
+                                <p id="totalMessagesValue" class="text-2xl font-bold text-blue-500">{{ number_format($totalAllMessages ?? 0) }}
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Card 2: Customer Satisfaction -->
-                    <div
+                    <div id="feedbackCard"
                         class="relative bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 transition-transform hover:-translate-y-0.5 hover:shadow-md">
                         <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <span class="text-xs text-gray-500 dark:text-gray-400"
@@ -1136,9 +1136,9 @@
                                     Feedback</h3>
                                 <div class="flex space-x-3">
                                     <p class="text-base font-semibold text-green-500">Positive:
-                                        {{ $positivePercentage }}%
+                                        <span id="positivePercentageValue">{{ $positivePercentage }}</span>%
                                     </p>
-                                    <p class="text-base font-semibold text-red-500">Negative: {{ $negativePercentage }}%
+                                    <p class="text-base font-semibold text-red-500">Negative: <span id="negativePercentageValue">{{ $negativePercentage }}</span>%
                                     </p>
                                 </div>
                             </div>
@@ -1146,7 +1146,7 @@
                     </div>
 
                     <!-- Card 3: From Ads -->
-                    <div
+                    <div id="fromAdsCard"
                         class="relative bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 transition-transform hover:-translate-y-0.5 hover:shadow-md">
                         <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <span class="text-xs text-gray-500 dark:text-gray-400"
@@ -1162,7 +1162,7 @@
                             </div>
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-700 dark:text-white mb-1">From Ads</h3>
-                                <p class="text-2xl font-bold text-green-500">{{ number_format($totalFromAds ?? 0) }}
+                                <p id="fromAdsValue" class="text-2xl font-bold text-green-500">{{ number_format($totalFromAds ?? 0) }}
                                 </p>
                             </div>
                         </div>
