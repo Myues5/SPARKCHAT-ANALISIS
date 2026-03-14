@@ -1141,7 +1141,7 @@
                                     <p class="text-base font-semibold text-red-500">Negative: <span id="negativePercentageValue">{{ $negativePercentage }}</span>%
                                     </p>
                                 </div>
-                            </div>
+                            </div> 
                         </div>
                     </div>
 
@@ -2332,20 +2332,137 @@
             });
         };
 
-        // ===== INITIALIZATION =====
-        document.addEventListener('DOMContentLoaded', function () {
-            overrideLoadingAlerts();
-            preventCustomerAutoSubmit();
-            autoDismissLoadingAlerts();
+        // ===== ANALYTICS CHART FILTER AJAX =====
+        const chartDateFilterForm = document.getElementById('chartDateFilterForm');
+        if (chartDateFilterForm) {
+            chartDateFilterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const params = new URLSearchParams();
+                for (let [key, value] of formData.entries()) {
+                    params.append(key, value);
+                }
+                
+                // Show loading
+                const chartLoading = document.getElementById('chartLoading');
+                if (chartLoading) chartLoading.classList.remove('hidden');
+                
+                // Fetch analytics data
+                fetch('/admin/dashboard/analytics-bundle?' + params.toString())
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update cards
+                            const totalMessagesValue = document.getElementById('totalMessagesValue');
+                            if (totalMessagesValue && data.data.totalAllMessages !== undefined) {
+                                totalMessagesValue.textContent = new Intl.NumberFormat().format(data.data.totalAllMessages);
+                            }
+                            
+                            const positivePercentageValue = document.getElementById('positivePercentageValue');
+                            if (positivePercentageValue && data.data.positivePercentage !== undefined) {
+                                positivePercentageValue.textContent = data.data.positivePercentage;
+                            }
+                            
+                            const negativePercentageValue = document.getElementById('negativePercentageValue');
+                            if (negativePercentageValue && data.data.negativePercentage !== undefined) {
+                                negativePercentageValue.textContent = data.data.negativePercentage;
+                            }
+                            
+                            const fromAdsValue = document.getElementById('fromAdsValue');
+                            if (fromAdsValue && data.data.totalFromAds !== undefined) {
+                                fromAdsValue.textContent = new Intl.NumberFormat().format(data.data.totalFromAds);
+                            }
+                            
+                            // Update charts
+                            updateCharts(data.data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching analytics data:', error);
+                    })
+                    .finally(() => {
+                        // Hide loading
+                        if (chartLoading) chartLoading.classList.add('hidden');
+                    });
+            });
+        }
 
-            // Initialize date refresh system
-            initDateRefreshSystem();
-            attachDateValidationListeners();
+        // ===== ADS FILTER AJAX =====
+        const adsDateFilterForm = document.getElementById('adsDateFilterForm');
+        if (adsDateFilterForm) {
+            adsDateFilterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const params = new URLSearchParams();
+                for (let [key, value] of formData.entries()) {
+                    params.append(key, value);
+                }
+                
+                // Show loading for ads section
+                const adsLoading = document.getElementById('adsChartLoading');
+                if (adsLoading) adsLoading.classList.remove('hidden');
+                
+                // Fetch analytics data (focus on ads data)
+                fetch('/admin/dashboard/analytics-bundle?' + params.toString())
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update From Ads card specifically
+                            const fromAdsValue = document.getElementById('fromAdsValue');
+                            if (fromAdsValue && data.data.totalFromAds !== undefined) {
+                                fromAdsValue.textContent = new Intl.NumberFormat().format(data.data.totalFromAds);
+                            }
+                            
+                            // Update ads chart
+                            if (window.adsChart && data.data.fromAdsChartDates && data.data.fromAdsChartData && data.data.nonAdsChartData) {
+                                window.adsChart.data.labels = data.data.fromAdsChartDates;
+                                window.adsChart.data.datasets[0].data = data.data.fromAdsChartData;
+                                window.adsChart.data.datasets[1].data = data.data.nonAdsChartData;
+                                window.adsChart.update();
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching ads data:', error);
+                    })
+                    .finally(() => {
+                        // Hide loading
+                        if (adsLoading) adsLoading.classList.add('hidden');
+                    });
+            });
+        }
 
-            @if(session('section_loading'))
-                showSuccessNotification();
-            @endif
-        });
+        // Function to update charts with new data
+        function updateCharts(data) {
+            // Update chat trend chart
+            if (window.chatTrendChart && data.chartLabels && data.customerData && data.csData) {
+                window.chatTrendChart.data.labels = data.chartLabels;
+                window.chatTrendChart.data.datasets[0].data = data.customerData;
+                window.chatTrendChart.data.datasets[1].data = data.csData;
+                window.chatTrendChart.update();
+            }
+            
+            // Update customer report chart
+            if (window.customerReportChart && data.customerChartDates && data.customerChartNewCustomers && data.customerChartExistingCustomers) {
+                window.customerReportChart.data.labels = data.customerChartDates;
+                window.customerReportChart.data.datasets[0].data = data.customerChartNewCustomers;
+                window.customerReportChart.data.datasets[1].data = data.customerChartExistingCustomers;
+                window.customerReportChart.update();
+            }
+            
+            // Update CSAT chart - Note: CSAT chart data not currently provided by analytics-bundle
+            // This would need to be added to getAnalyticsBundle if CSAT chart updates are required
+            
+            // Update from ads chart
+            if (window.adsChart && data.fromAdsChartDates && data.fromAdsChartData && data.nonAdsChartData) {
+                window.adsChart.data.labels = data.fromAdsChartDates;
+                window.adsChart.data.datasets[0].data = data.fromAdsChartData;
+                window.adsChart.data.datasets[1].data = data.nonAdsChartData;
+                window.adsChart.update();
+            }
+        }
 
         // ===== DATE REFRESH SYSTEM =====
         function initDateRefreshSystem() {

@@ -47,78 +47,74 @@ function filterCSATTable() {
         }
     });
 
-    Promise.all([csatPromise, analyticsPromise])
-    .then(async ([csatResponse, analyticsResponse]) => {
-        console.log('📡 CSAT response status:', csatResponse.status);
-        console.log('📡 Analytics response status:', analyticsResponse.status);
+   Promise.all([csatPromise, analyticsPromise])
+.then(async ([csatResponse, analyticsResponse]) => {
 
-        if (!csatResponse.ok) throw new Error(`CSAT HTTP ${csatResponse.status}: ${csatResponse.statusText}`);
-        if (!analyticsResponse.ok) throw new Error(`Analytics HTTP ${analyticsResponse.status}: ${analyticsResponse.statusText}`);
+    console.log('📡 CSAT response status:', csatResponse.status);
+    console.log('📡 Analytics response status:', analyticsResponse.status);
 
-        const csatData = await csatResponse.json();
-        const analyticsData = await analyticsResponse.json();
+    if (!csatResponse.ok) {
+        throw new Error(`CSAT HTTP ${csatResponse.status}: ${csatResponse.statusText}`);
+    }
 
-        console.log('📄 Received CSAT data:', csatData);
-        console.log('📄 Received analytics data:', analyticsData);
+    if (!analyticsResponse.ok) {
+        throw new Error(`Analytics HTTP ${analyticsResponse.status}: ${analyticsResponse.statusText}`);
+    }
 
-        if (!csatResponse.ok) throw new Error(`CSAT HTTP ${csatResponse.status}: ${csatResponse.statusText}`);
-        if (!ratingsResponse.ok) throw new Error(`Ratings HTTP ${ratingsResponse.status}: ${ratingsResponse.statusText}`);
-        if (!messageStatsResponse.ok) throw new Error(`Message Stats HTTP ${messageStatsResponse.status}: ${messageStatsResponse.statusText}`);
+    let csatData = await csatResponse.json();
+    let analyticsData = await analyticsResponse.json();
 
-        const csatData = await csatResponse.json();
-        const ratingsData = await ratingsResponse.json();
-        const messageStatsData = await messageStatsResponse.json();
+    console.log('📄 Received CSAT data:', csatData);
+    console.log('📄 Received analytics data:', analyticsData);
 
-        console.log('📄 Received CSAT data:', csatData);
-        console.log('📄 Received ratings data:', ratingsData);
-        console.log('📄 Received message stats data:', messageStatsData);
+    // Update CSAT table
+    updateCSATTable(csatData.csatResponsesPaginated.data || []);
 
-        console.log('📄 Received CSAT data:', csatData);
-        console.log('📄 Received analytics data:', analyticsData);
+    // Update pagination
+    updateCSATPagination(csatData.csatResponsesPaginated);
 
-        // Update CSAT table body
-        updateCSATTable(csatData.csatResponsesPaginated.data || []);
+    // Update stats cards
+    updateCSATStats(csatData);
 
-        // Update pagination
-        updateCSATPagination(csatData.csatResponsesPaginated);
+    // Update dashboard statistics
+    if (analyticsData && analyticsData.data) {
+        updateDashboardStats(analyticsData.data);
+    }
 
-        // Update stats cards
-        updateCSATStats(csatData);
+    // Update URL without reload
+    const url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.set('section', 'agents');
+    url.searchParams.set('csat_page', '1');
 
-        // Update dashboard statistics
-        if (analyticsData && analyticsData.data) {
-            updateDashboardStats(analyticsData.data);
-        } else {
-            console.warn('❌ Analytics data structure invalid:', analyticsData);
-        }
+    if (search) url.searchParams.set('csat_search', search);
+    if (startDate) url.searchParams.set('csat_start_date', startDate);
+    if (endDate) url.searchParams.set('csat_end_date', endDate);
+    if (perPage) url.searchParams.set('csat_per_page', perPage);
+    if (csatCsId) url.searchParams.set('csat_cs_id', csatCsId);
 
-        // Update URL without reload
-        const url = new URL(window.location.origin + window.location.pathname);
-        url.searchParams.set('section', 'agents');
-        url.searchParams.set('csat_page', '1');
-        if (search) url.searchParams.set('csat_search', search);
-        if (startDate) url.searchParams.set('csat_start_date', startDate);
-        if (endDate) url.searchParams.set('csat_end_date', endDate);
-        if (perPage) url.searchParams.set('csat_per_page', perPage);
-        if (csatCsId) url.searchParams.set('csat_cs_id', csatCsId);
-        window.history.pushState({}, '', url.toString());
+    window.history.pushState({}, '', url.toString());
 
-        console.log('✅ Filter completed successfully');
+    console.log('✅ Filter completed successfully');
 
-        // Hide loading alert and show success toast
-        window.LoadingAlerts?.hide();
-        window.LoadingAlerts?.showSuccess('Berhasil!', 'Data berhasil dimuat.');
-    })
-    .catch(error => {
-        console.error('❌ Filter error:', error);
-        window.LoadingAlerts?.hide();
+    window.LoadingAlerts?.hide();
+    window.LoadingAlerts?.showSuccess('Berhasil!', 'Data berhasil dimuat.');
 
-        // Show error message
-        if (window.LoadingAlerts?.show) {
-            window.LoadingAlerts.show('Error', 'Terjadi kesalahan saat memuat data. Silakan coba lagi.', { icon: 'error' });
-        }
-    });
-}
+})
+.catch(error => {
+
+    console.error('❌ Filter error:', error);
+
+    window.LoadingAlerts?.hide();
+
+    if (window.LoadingAlerts?.show) {
+        window.LoadingAlerts.show(
+            'Error',
+            'Terjadi kesalahan saat memuat data. Silakan coba lagi.',
+            { icon: 'error' }
+        );
+    }
+
+});
 
 // Update CSAT table body with new data
 function updateCSATTable(responses) {

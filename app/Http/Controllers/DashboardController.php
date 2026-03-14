@@ -2570,6 +2570,7 @@ class DashboardController extends Controller
         $chatTrendData = $this->getChatTrendData($request);
         $customerReportData = $this->getCustomerReportData($request);
         $csatData = $this->getCSATData($request);
+        $fromAdsData = $this->getFromAdsData($request);
 
         // Include summary metrics for the analytics top cards
         $chartDates = $this->validateDateInputs(
@@ -2594,8 +2595,10 @@ class DashboardController extends Controller
                 'csat_per_page' => $request->get('csat_per_page'),
                 'csat_page' => $request->get('csat_page'),
                 'csat_cs_id' => $request->get('csat_cs_id'),
+                'ads_start_date' => $request->get('ads_start_date'),
+                'ads_end_date' => $request->get('ads_end_date'),
             ],
-            'data' => array_merge($chatTrendData, $customerReportData, $csatData, $summaryMessageStats, $summarySatisfaction)
+            'data' => array_merge($chatTrendData, $customerReportData, $csatData, $fromAdsData, $summaryMessageStats, $summarySatisfaction)
         ]);
     }
 
@@ -2712,10 +2715,11 @@ class DashboardController extends Controller
 
     private function getFromAdsData(Request $request)
     {
-        $dateInputs = $this->validateDateInputs(
-            $request->get('ads_start_date'),
-            $request->get('ads_end_date')
-        );
+        // Use ads dates if provided, otherwise fall back to chart dates
+        $adsStartDate = $request->get('ads_start_date') ?: $request->get('chart_start_date');
+        $adsEndDate = $request->get('ads_end_date') ?: $request->get('chart_end_date');
+        
+        $dateInputs = $this->validateDateInputs($adsStartDate, $adsEndDate);
 
         $startDate = $dateInputs['start_date'] . ' 00:00:00';
         $endDate = $dateInputs['end_date'] . ' 23:59:59';
