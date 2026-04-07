@@ -30,8 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize auto-refresh date system
     initAutoRefreshDates();
 
-    loadFilterFromLocal("chart_start_date", 'input[name="chart_start_date"]');
-    loadFilterFromLocal("chart_end_date", 'input[name="chart_end_date"]');
+    loadFilterFromLocal("message_stats_start_date", 'input[name="message_stats_start_date"]');
+    loadFilterFromLocal("message_stats_end_date", 'input[name="message_stats_end_date"]');
     loadFilterFromLocal("second_start_date", 'input[name="second_start_date"]');
     loadFilterFromLocal("second_end_date", 'input[name="second_end_date"]');
 
@@ -557,17 +557,17 @@ function setDefaultDateRanges() {
     const todayStr = today.toISOString().split('T')[0];
     const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
 
-    // Chart date filters
-    const chartStartInput = document.querySelector('input[name="chart_start_date"]');
-    const chartEndInput = document.querySelector('input[name="chart_end_date"]');
+    // Dashboard stats date filters
+    const messageStatsStartInput = document.querySelector('input[name="message_stats_start_date"]');
+    const messageStatsEndInput = document.querySelector('input[name="message_stats_end_date"]');
 
-    if (chartStartInput && !chartStartInput.value) {
-        chartStartInput.value = thirtyDaysAgoStr;
-        saveFilterToLocal('chart_start_date', thirtyDaysAgoStr);
+    if (messageStatsStartInput && !messageStatsStartInput.value) {
+        messageStatsStartInput.value = thirtyDaysAgoStr;
+        saveFilterToLocal('message_stats_start_date', thirtyDaysAgoStr);
     }
-    if (chartEndInput && !chartEndInput.value) {
-        chartEndInput.value = todayStr;
-        saveFilterToLocal('chart_end_date', todayStr);
+    if (messageStatsEndInput && !messageStatsEndInput.value) {
+        messageStatsEndInput.value = todayStr;
+        saveFilterToLocal('message_stats_end_date', todayStr);
     }
 
     // Customer report date filters
@@ -631,6 +631,7 @@ function updateAllDateFilters() {
 
     // Update end dates to today
     const endDateInputs = [
+        document.querySelector('input[name="message_stats_end_date"]'),
         document.querySelector('input[name="chart_end_date"]'),
         document.querySelector('input[name="second_end_date"]'),
         document.getElementById('csatEndDate'),
@@ -645,6 +646,7 @@ function updateAllDateFilters() {
             if (input.value && input.value > todayStr) {
                 input.value = todayStr;
                 // Save to localStorage if it has a corresponding key
+                if (input.name === 'message_stats_end_date') saveFilterToLocal('message_stats_end_date', todayStr);
                 if (input.name === 'chart_end_date') saveFilterToLocal('chart_end_date', todayStr);
                 if (input.name === 'second_end_date') saveFilterToLocal('second_end_date', todayStr);
                 if (input.id === 'csatEndDate') saveFilterToLocal('csat_end_date', todayStr);
@@ -884,10 +886,10 @@ function handleChartDateFilter() {
             }
 
             const startDate = this.querySelector(
-                'input[name="chart_start_date"]'
+                'input[name="message_stats_start_date"]'
             ).value;
             const endDate = this.querySelector(
-                'input[name="chart_end_date"]'
+                'input[name="message_stats_end_date"]'
             ).value;
             const today = new Date().toISOString().split("T")[0];
 
@@ -927,14 +929,22 @@ function handleChartDateFilter() {
                 return;
             }
 
-            saveFilterToLocal("chart_start_date", startDate);
-            saveFilterToLocal("chart_end_date", endDate);
+            saveFilterToLocal("message_stats_start_date", startDate);
+            saveFilterToLocal("message_stats_end_date", endDate);
 
             const url = new URL(window.location.href);
-            url.searchParams.set("section", "analytics");
-            url.searchParams.set("chart_start_date", startDate);
-            url.searchParams.set("chart_end_date", endDate);
-            history.pushState({ section: "analytics" }, "", url.toString());
+            const currentSection = url.searchParams.get("section") || "dashboard";
+            url.searchParams.set("section", currentSection);
+            url.searchParams.set("message_stats_start_date", startDate);
+            url.searchParams.set("message_stats_end_date", endDate);
+
+            if (currentSection === "dashboard") {
+                // For dashboard section, just reload the page with new parameters
+                window.location.href = url.toString();
+                return;
+            }
+
+            history.pushState({ section: currentSection }, "", url.toString());
 
             const chartLoading = document.getElementById("chartLoading");
             if (chartLoading) chartLoading.classList.remove("hidden");

@@ -95,6 +95,24 @@
                         </p>
                     </div>
                     <div class="flex gap-3">
+                        <form method="GET" action="" class="flex items-center gap-2" id="chartDateFilterForm">
+                            @foreach(request()->except(['message_stats_start_date', 'message_stats_end_date', 'section']) as $k => $v)
+                                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+                            @endforeach
+                            <input type="hidden" name="section" value="dashboard">
+                            <input type="date" name="message_stats_start_date" id="message_stats_start_date"
+                                value="{{ request()->get('message_stats_start_date', now()->subDays(30)->format('Y-m-d')) }}"
+                                max="{{ now()->format('Y-m-d') }}"
+                                class="px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <span class="text-xs text-gray-500 dark:text-gray-400">ke</span>
+                            <input type="date" name="message_stats_end_date" id="message_stats_end_date"
+                                value="{{ request()->get('message_stats_end_date', now()->format('Y-m-d')) }}"
+                                max="{{ now()->format('Y-m-d') }}"
+                                class="px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <button type="submit" class="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-medium transition-colors">
+                                <i class="fas fa-search text-xs"></i>
+                            </button>
+                        </form>
                         <button id="darkToggle"
                             class="glass-button px-4 py-2 rounded-full shadow border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-300">
                             <span class="flex items-center gap-1.5">
@@ -159,20 +177,16 @@
                             <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                                 <div class="flex items-center gap-2">
                                     <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Fast
-                                        Response</span>
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Fast Response</span>
                                 </div>
-                                <span
-                                    class="text-xl font-bold text-green-600">{{ number_format((float) ($fastCount ?? 125), 2) }}</span>
+                                <span class="text-xl font-bold text-green-600">{{ number_format((float) ($fastCount ?? 0), 2) }}</span>
                             </div>
                             <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                                 <div class="flex items-center gap-2">
                                     <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Slow
-                                        Response</span>
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Slow Response</span>
                                 </div>
-                                <span
-                                    class="text-xl font-bold text-red-600">{{ number_format((float) ($slowCount ?? 23), 2) }}</span>
+                                <span class="text-xl font-bold text-red-600">{{ number_format((float) ($slowCount ?? 0), 2) }}</span>
                             </div>
                         </div>
                     </div>
@@ -188,27 +202,33 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div class="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                                 <div class="text-2xl font-light text-gray-700 dark:text-gray-200 mb-1">
-                                    {{ number_format((float) ($totalAllMessages ?? 0), 2) }}
+                                    {{ number_format((float) ($totalAllMessages ?? 0), 2, ',', '.') }}
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Chat Masuk</div>
                             </div>
                             <div class="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                                 <div class="text-2xl font-light text-gray-700 dark:text-gray-200 mb-1">
-                                    {{ number_format((float) ($totalFeedback ?? 0), 2) }}
+                                    {{ number_format((float) ($totalFeedback ?? 0), 2, ',', '.') }}
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Feedback</div>
                             </div>
                             <div class="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                                 <div class="text-2xl font-light text-gray-700 dark:text-gray-200 mb-1">
-                                    {{ number_format((float) ($positivePercentage ?? 0), 2) }}%
+                                    {{ number_format((float) ($positivePercentage ?? 0), 2, ',', '.') }}%
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Positive Rating</div>
                             </div>
                             <div class="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                                 <div class="text-2xl font-light text-gray-700 dark:text-gray-200 mb-1">
-                                    {{ $negativePercentage }}%
+                                    {{ number_format((float) ($negativePercentage ?? 0), 2, ',', '.') }}%
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Negative Rating</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                                <div class="text-2xl font-light text-gray-700 dark:text-gray-200 mb-1">
+                                    {{ number_format((float) ($neutralPercentage ?? 0), 2, ',', '.') }}%
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Neutral Rating</div>
                             </div>
                         </div>
                     </div>
@@ -265,146 +285,7 @@
                     </div>
                 </div>
 
-                <!-- Interaction Log Table -->
-                <div class="glass-effect p-4 rounded-2xl shadow border border-gray-200 dark:border-gray-700 mt-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-light text-gray-700 dark:text-gray-200">Review Log</h3>
-                        <div class="flex gap-2 items-center">
-                            <!-- Date Filter -->
-                            <div class="flex gap-2">
-                                <input type="date" name="date_from"
-                                    value="{{ request()->date_from ?: now()->subDays(30)->toDateString() }}"
-                                    max="{{ now()->toDateString() }}"
-                                    class="px-3 py-1 border rounded text-sm text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600">
-                                <input type="date" name="date_to"
-                                    value="{{ request()->date_to ?: now()->toDateString() }}"
-                                    max="{{ now()->toDateString() }}"
-                                    class="px-3 py-1 border rounded text-sm text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600">
-                            </div>
-                            <!-- Dropdown for Export Type -->
-                            <select name="export_type"
-                                class="px-3 py-1 border rounded text-sm text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600">
-                                <option value="review_log">Export Review Log</option>
-                                <option value="message_log">Export Message Log</option>
-                            </select>
-                            <a href="#" id="export-button"
-                                data-export-review-log="{{ route('dashboard.export-review-log') }}"
-                                data-export-message-log="{{ route('dashboard.export-message-log') }}"
-                                class="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                                </svg>
-                                <span>Export Excel</span>
-                            </a>
-                        </div>
-                    </div>
 
-                    <div class="overflow-x-auto rounded-lg">
-                        <table class="w-full text-xs text-left text-gray-700 dark:text-gray-300">
-                            <thead
-                                class="text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                                <tr>
-                                    <th class="px-3 py-2">CS ID</th>
-                                    <th class="px-3 py-2">Agent Name</th>
-                                    <th class="px-3 py-2">Date</th>
-                                    <th class="px-3 py-2">Rating</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ratingsTableBody">
-                                @foreach ($satisfactionRatings as $rating)
-                                    <tr
-                                        class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                                        <td class="px-3 py-1.5">{{ $rating->cs_id ?? 'N/A' }}</td>
-                                        <td class="px-3 py-1.5">{{ $rating->cs->username ?? $rating->cs_id ?? 'N/A' }}</td>
-                                        <td class="px-3 py-1.5">
-                                            {{ \Carbon\Carbon::parse($rating->received_at)->format('Y-m-d') }}
-                                        </td>
-                                        <td class="px-3 py-1.5">
-                                            @php
-                                                $decodedRating = json_decode($rating->rating, true);
-                                                $ratingId = strtolower($decodedRating['id'] ?? 'datar');
-                                                $starCount = match ($ratingId) {
-                                                    'marah' => 1,
-                                                    'sedih' => 2,
-                                                    'datar' => 3,
-                                                    'puas' => 4,
-                                                    'sangat puas' => 5,
-                                                    default => 3,
-                                                };
-                                                $colorClass = match ($ratingId) {
-                                                    'marah' => 'text-red-500',
-                                                    'sedih' => 'text-orange-500',
-                                                    'datar' => 'text-gray-500',
-                                                    'puas' => 'text-green-500',
-                                                    'sangat puas' => 'text-green-600 font-semibold',
-                                                    default => 'text-gray-500',
-                                                };
-                                            @endphp
-                                            <span class="{{ $colorClass }}">
-                                                {{ ucfirst($ratingId) }}
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    @if ($i <= $starCount)
-                                                        <span>★</span>
-                                                    @else
-                                                        <span>☆</span>
-                                                    @endif
-                                                @endfor
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    @if(method_exists($satisfactionRatings, 'total') && $satisfactionRatings->total() > 0)
-                        <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-                            <div class="text-xs text-gray-600 dark:text-gray-400">
-                                Showing {{ $satisfactionRatings->firstItem() }} to {{ $satisfactionRatings->lastItem() }} of
-                                {{ $satisfactionRatings->total() }} ratings
-                            </div>
-                            <div class="flex items-center gap-2">
-                                @php
-                                    $ratingQuery = request()->except(['rating_page']);
-                                    $prevRatingUrl = $satisfactionRatings->previousPageUrl();
-                                    $nextRatingUrl = $satisfactionRatings->nextPageUrl();
-                                @endphp
-                                @if($satisfactionRatings->onFirstPage())
-                                    <span
-                                        class="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-400 rounded-lg">Prev</span>
-                                @else
-                                    <a data-ajax="ratings" href="{{ $prevRatingUrl }}&section=dashboard"
-                                        class="rating-nav px-2 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">Prev</a>
-                                @endif
-                                <span class="text-xs text-gray-500 dark:text-gray-400">Page
-                                    {{ $satisfactionRatings->currentPage() }} /
-                                    {{ $satisfactionRatings->lastPage() }}</span>
-                                @if($satisfactionRatings->hasMorePages())
-                                    <a data-ajax="ratings" href="{{ $nextRatingUrl }}&section=dashboard"
-                                        class="rating-nav px-2 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">Next</a>
-                                @else
-                                    <span
-                                        class="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-400 rounded-lg">Next</span>
-                                @endif
-                                <form method="GET" class="ml-2">
-                                    @foreach(request()->except(['rating_per_page', 'rating_page']) as $k => $v)
-                                        <input type="hidden" name="{{ $k }}" value="{{ $v }}" />
-                                    @endforeach
-                                    <input type="hidden" name="section" value="dashboard" />
-                                    <select name="rating_per_page" onchange="this.form.submit()"
-                                        class="px-2 py-1 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 text-xs focus:ring-1 focus:ring-blue-500">
-                                        @foreach([10, 20, 50, 100] as $opt)
-                                            <option value="{{ $opt }}" {{ ($ratingPerPage ?? 10) == $opt ? 'selected' : '' }}>
-                                                {{ $opt }}/page
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </form>
-                            </div>
-                        </div>
-                    @endif
-                </div>
             </div>
 
             <div id="agentsSection" class="content-section hidden py-6" x-data="{
@@ -430,7 +311,7 @@
                 </div>
 
                 <!-- CSAT Statistics Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 mt-6 px-3">
+                <div id="csatStatsCards" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 mt-6 px-3">
                     <div
                         class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg shadow border border-orange-200 dark:border-orange-800 transition-transform hover:-translate-y-0.5">
                         <div class="flex items-center gap-3">
@@ -642,7 +523,7 @@
                             </select>
                             <span class="text-xs text-gray-600 dark:text-gray-400">entries</span>
                         </div>
-                        <div class="text-xs text-gray-600 dark:text-gray-400">
+                        <div id="csatSummaryTop" class="text-xs text-gray-600 dark:text-gray-400">
                             Showing {{ $csatResponsesPaginated->firstItem() ?? 0 }} to
                             {{ $csatResponsesPaginated->lastItem() ?? 0 }} of {{ $csatResponsesPaginated->total() }}
                             entries
@@ -682,7 +563,7 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="csatTableBody">
                                 @forelse($csatResponsesPaginated as $response)
                                     <tr
                                         class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
@@ -714,8 +595,8 @@
                     </div>
 
                     @if ($csatResponsesPaginated->hasPages())
-                        <div class="mt-5 flex flex-col items-center gap-3">
-                            <div class="text-xs text-gray-600 dark:text-gray-400 text-center">
+                        <div id="csatPagination" class="mt-5 flex flex-col items-center gap-3">
+                            <div id="csatSummaryBottom" class="text-xs text-gray-600 dark:text-gray-400 text-center">
                                 Showing {{ $csatResponsesPaginated->firstItem() ?? 0 }} to
                                 {{ $csatResponsesPaginated->lastItem() ?? 0 }} of {{ $csatResponsesPaginated->total() }}
                                 entries
@@ -950,6 +831,147 @@
                         </div>
                     </div>
                 @endif
+
+                <!-- Interaction Log Table -->
+                <div class="glass-effect p-4 rounded-2xl shadow border border-gray-200 dark:border-gray-700 mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-light text-gray-700 dark:text-gray-200">Review Log</h3>
+                        <div class="flex gap-2 items-center">
+                            <!-- Date Filter -->
+                            <div class="flex gap-2">
+                                <input type="date" name="date_from"
+                                    value="{{ request()->date_from ?: now()->subDays(30)->toDateString() }}"
+                                    max="{{ now()->toDateString() }}"
+                                    class="px-3 py-1 border rounded text-sm text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600">
+                                <input type="date" name="date_to"
+                                    value="{{ request()->date_to ?: now()->toDateString() }}"
+                                    max="{{ now()->toDateString() }}"
+                                    class="px-3 py-1 border rounded text-sm text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600">
+                            </div>
+                            <!-- Dropdown for Export Type -->
+                            <select name="export_type"
+                                class="px-3 py-1 border rounded text-sm text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600">
+                                <option value="review_log">Export Review Log</option>
+                                <option value="message_log">Export Message Log</option>
+                            </select>
+                            <a href="#" id="export-button"
+                                data-export-review-log="{{ route('dashboard.export-review-log') }}"
+                                data-export-message-log="{{ route('dashboard.export-message-log') }}"
+                                class="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                </svg>
+                                <span>Export Excel</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-lg">
+                        <table class="w-full text-xs text-left text-gray-700 dark:text-gray-300">
+                            <thead
+                                class="text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                <tr>
+                                    <th class="px-3 py-2">CS ID</th>
+                                    <th class="px-3 py-2">Agent Name</th>
+                                    <th class="px-3 py-2">Date</th>
+                                    <th class="px-3 py-2">Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ratingsTableBody">
+                                @foreach ($satisfactionRatings as $rating)
+                                    <tr
+                                        class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                        <td class="px-3 py-1.5">{{ $rating->cs_id ?? 'N/A' }}</td>
+                                        <td class="px-3 py-1.5">{{ $rating->cs->username ?? $rating->cs_id ?? 'N/A' }}</td>
+                                        <td class="px-3 py-1.5">
+                                            {{ \Carbon\Carbon::parse($rating->received_at)->format('Y-m-d') }}
+                                        </td>
+                                        <td class="px-3 py-1.5">
+                                            @php
+                                                $decodedRating = json_decode($rating->rating, true);
+                                                $ratingId = strtolower($decodedRating['id'] ?? 'datar');
+                                                $starCount = match ($ratingId) {
+                                                    'marah' => 1,
+                                                    'sedih' => 2,
+                                                    'datar' => 3,
+                                                    'puas' => 4,
+                                                    'sangat puas' => 5,
+                                                    default => 3,
+                                                };
+                                                $colorClass = match ($ratingId) {
+                                                    'marah' => 'text-red-500',
+                                                    'sedih' => 'text-orange-500',
+                                                    'datar' => 'text-gray-500',
+                                                    'puas' => 'text-green-500',
+                                                    'sangat puas' => 'text-green-600 font-semibold',
+                                                    default => 'text-gray-500',
+                                                };
+                                            @endphp
+                                            <span class="{{ $colorClass }}">
+                                                {{ ucfirst($ratingId) }}
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    @if ($i <= $starCount)
+                                                        <span>★</span>
+                                                    @else
+                                                        <span>☆</span>
+                                                    @endif
+                                                @endfor
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @if(method_exists($satisfactionRatings, 'total') && $satisfactionRatings->total() > 0)
+                        <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+                            <div class="text-xs text-gray-600 dark:text-gray-400">
+                                Showing {{ $satisfactionRatings->firstItem() }} to {{ $satisfactionRatings->lastItem() }} of
+                                {{ $satisfactionRatings->total() }} ratings
+                            </div>
+                            <div class="flex items-center gap-2">
+                                @php
+                                    $ratingQuery = request()->except(['rating_page']);
+                                    $prevRatingUrl = $satisfactionRatings->previousPageUrl();
+                                    $nextRatingUrl = $satisfactionRatings->nextPageUrl();
+                                @endphp
+                                @if($satisfactionRatings->onFirstPage())
+                                    <span
+                                        class="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-400 rounded-lg">Prev</span>
+                                @else
+                                    <a data-ajax="ratings" href="{{ $prevRatingUrl }}&section=agents"
+                                        class="rating-nav px-2 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">Prev</a>
+                                @endif
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Page
+                                    {{ $satisfactionRatings->currentPage() }} /
+                                    {{ $satisfactionRatings->lastPage() }}</span>
+                                @if($satisfactionRatings->hasMorePages())
+                                    <a data-ajax="ratings" href="{{ $nextRatingUrl }}&section=agents"
+                                        class="rating-nav px-2 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">Next</a>
+                                @else
+                                    <span
+                                        class="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-400 rounded-lg">Next</span>
+                                @endif
+                                <form method="GET" class="ml-2">
+                                    @foreach(request()->except(['rating_per_page', 'rating_page']) as $k => $v)
+                                        <input type="hidden" name="{{ $k }}" value="{{ $v }}" />
+                                    @endforeach
+                                    <input type="hidden" name="section" value="agents" />
+                                    <select name="rating_per_page" onchange="this.form.submit()"
+                                        class="px-2 py-1 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 text-xs focus:ring-1 focus:ring-blue-500">
+                                        @foreach([10, 20, 50, 100] as $opt)
+                                            <option value="{{ $opt }}" {{ ($ratingPerPage ?? 10) == $opt ? 'selected' : '' }}>
+                                                {{ $opt }}/page
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
+                </div>
             </div>
 
             <!--
@@ -1094,7 +1116,7 @@
                 <!-- Analytics Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <!-- Card 1: Total Messages -->
-                    <div
+                    <div id="totalMessagesCard"
                         class="relative bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 transition-transform hover:-translate-y-0.5 hover:shadow-md">
                         <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <span class="text-xs text-gray-500 dark:text-gray-400"
@@ -1110,15 +1132,15 @@
                             </div>
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-700 dark:text-white mb-1">Total Messages</h3>
-                                <p class="text-2xl font-bold text-blue-500">{{ number_format($totalAllMessages ?? 0) }}
+                                <p id="totalMessagesValue" class="text-2xl font-bold text-blue-500">{{ number_format($totalAllMessages ?? 0) }}
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Card 2: Customer Satisfaction -->
-                    <div
-                        class="relative bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 transition-transform hover:-translate-y-0.5 hover:shadow-md">
+                    {{-- <div id="feedbackCard" --}}
+                        {{-- class="relative bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 transition-transform hover:-translate-y-0.5 hover:shadow-md">
                         <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <span class="text-xs text-gray-500 dark:text-gray-400"
                                 title="Percentage of positive feedback"><i class="fas fa-info-circle"></i></span>
@@ -1136,17 +1158,17 @@
                                     Feedback</h3>
                                 <div class="flex space-x-3">
                                     <p class="text-base font-semibold text-green-500">Positive:
-                                        {{ $positivePercentage }}%
+                                        <span id="positivePercentageValue">{{ $positivePercentage }}</span>%
                                     </p>
-                                    <p class="text-base font-semibold text-red-500">Negative: {{ $negativePercentage }}%
+                                    <p class="text-base font-semibold text-red-500">Negative: <span id="negativePercentageValue">{{ $negativePercentage }}</span>%
                                     </p>
                                 </div>
-                            </div>
+                            </div> 
                         </div>
-                    </div>
+                    </div> --}}
 
                     <!-- Card 3: From Ads -->
-                    <div
+                    <div id="fromAdsCard"
                         class="relative bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 transition-transform hover:-translate-y-0.5 hover:shadow-md">
                         <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <span class="text-xs text-gray-500 dark:text-gray-400"
@@ -1162,7 +1184,7 @@
                             </div>
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-700 dark:text-white mb-1">From Ads</h3>
-                                <p class="text-2xl font-bold text-green-500">{{ number_format($totalFromAds ?? 0) }}
+                                <p id="fromAdsValue" class="text-2xl font-bold text-green-500">{{ number_format($totalFromAds ?? 0) }}
                                 </p>
                             </div>
                         </div>
@@ -2332,20 +2354,137 @@
             });
         };
 
-        // ===== INITIALIZATION =====
-        document.addEventListener('DOMContentLoaded', function () {
-            overrideLoadingAlerts();
-            preventCustomerAutoSubmit();
-            autoDismissLoadingAlerts();
+        // ===== ANALYTICS CHART FILTER AJAX =====
+        const chartDateFilterForm = document.getElementById('chartDateFilterForm');
+        if (chartDateFilterForm) {
+            chartDateFilterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const params = new URLSearchParams();
+                for (let [key, value] of formData.entries()) {
+                    params.append(key, value);
+                }
+                
+                // Show loading
+                const chartLoading = document.getElementById('chartLoading');
+                if (chartLoading) chartLoading.classList.remove('hidden');
+                
+                // Fetch analytics data
+                fetch('/admin/dashboard/analytics-bundle?' + params.toString())
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update cards
+                            const totalMessagesValue = document.getElementById('totalMessagesValue');
+                            if (totalMessagesValue && data.data.totalAllMessages !== undefined) {
+                                totalMessagesValue.textContent = new Intl.NumberFormat().format(data.data.totalAllMessages);
+                            }
+                            
+                            const positivePercentageValue = document.getElementById('positivePercentageValue');
+                            if (positivePercentageValue && data.data.positivePercentage !== undefined) {
+                                positivePercentageValue.textContent = data.data.positivePercentage;
+                            }
+                            
+                            const negativePercentageValue = document.getElementById('negativePercentageValue');
+                            if (negativePercentageValue && data.data.negativePercentage !== undefined) {
+                                negativePercentageValue.textContent = data.data.negativePercentage;
+                            }
+                            
+                            const fromAdsValue = document.getElementById('fromAdsValue');
+                            if (fromAdsValue && data.data.totalFromAds !== undefined) {
+                                fromAdsValue.textContent = new Intl.NumberFormat().format(data.data.totalFromAds);
+                            }
+                            
+                            // Update charts
+                            updateCharts(data.data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching analytics data:', error);
+                    })
+                    .finally(() => {
+                        // Hide loading
+                        if (chartLoading) chartLoading.classList.add('hidden');
+                    });
+            });
+        }
 
-            // Initialize date refresh system
-            initDateRefreshSystem();
-            attachDateValidationListeners();
+        // ===== ADS FILTER AJAX =====
+        const adsDateFilterForm = document.getElementById('adsDateFilterForm');
+        if (adsDateFilterForm) {
+            adsDateFilterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const params = new URLSearchParams();
+                for (let [key, value] of formData.entries()) {
+                    params.append(key, value);
+                }
+                
+                // Show loading for ads section
+                const adsLoading = document.getElementById('adsChartLoading');
+                if (adsLoading) adsLoading.classList.remove('hidden');
+                
+                // Fetch analytics data (focus on ads data)
+                fetch('/admin/dashboard/analytics-bundle?' + params.toString())
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update From Ads card specifically
+                            const fromAdsValue = document.getElementById('fromAdsValue');
+                            if (fromAdsValue && data.data.totalFromAds !== undefined) {
+                                fromAdsValue.textContent = new Intl.NumberFormat().format(data.data.totalFromAds);
+                            }
+                            
+                            // Update ads chart
+                            if (window.adsChart && data.data.fromAdsChartDates && data.data.fromAdsChartData && data.data.nonAdsChartData) {
+                                window.adsChart.data.labels = data.data.fromAdsChartDates;
+                                window.adsChart.data.datasets[0].data = data.data.fromAdsChartData;
+                                window.adsChart.data.datasets[1].data = data.data.nonAdsChartData;
+                                window.adsChart.update();
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching ads data:', error);
+                    })
+                    .finally(() => {
+                        // Hide loading
+                        if (adsLoading) adsLoading.classList.add('hidden');
+                    });
+            });
+        }
 
-            @if(session('section_loading'))
-                showSuccessNotification();
-            @endif
-        });
+        // Function to update charts with new data
+        function updateCharts(data) {
+            // Update chat trend chart
+            if (window.chatTrendChart && data.chartLabels && data.customerData && data.csData) {
+                window.chatTrendChart.data.labels = data.chartLabels;
+                window.chatTrendChart.data.datasets[0].data = data.customerData;
+                window.chatTrendChart.data.datasets[1].data = data.csData;
+                window.chatTrendChart.update();
+            }
+            
+            // Update customer report chart
+            if (window.customerReportChart && data.customerChartDates && data.customerChartNewCustomers && data.customerChartExistingCustomers) {
+                window.customerReportChart.data.labels = data.customerChartDates;
+                window.customerReportChart.data.datasets[0].data = data.customerChartNewCustomers;
+                window.customerReportChart.data.datasets[1].data = data.customerChartExistingCustomers;
+                window.customerReportChart.update();
+            }
+            
+            // Update CSAT chart - Note: CSAT chart data not currently provided by analytics-bundle
+            // This would need to be added to getAnalyticsBundle if CSAT chart updates are required
+            
+            // Update from ads chart
+            if (window.adsChart && data.fromAdsChartDates && data.fromAdsChartData && data.nonAdsChartData) {
+                window.adsChart.data.labels = data.fromAdsChartDates;
+                window.adsChart.data.datasets[0].data = data.fromAdsChartData;
+                window.adsChart.data.datasets[1].data = data.nonAdsChartData;
+                window.adsChart.update();
+            }
+        }
 
         // ===== DATE REFRESH SYSTEM =====
         function initDateRefreshSystem() {

@@ -759,7 +759,10 @@ class DashboardController extends Controller
     private function prepareDashboardAgentsPayload(Request $request, array $payload): array
     {
         $satisfactionData = $this->getSatisfactionRatingsData();
-        $responseTimeData = $this->getResponseTimeData($payload['responseTimeDays']);
+        // Use the same date range for response time data as message stats
+        $from = Carbon::parse($payload['messageStatsStartDate'])->startOfDay();
+        $to = Carbon::parse($payload['messageStatsEndDate'])->endOfDay();
+        $responseTimeData = $this->getResponseTimeDataByRange($from, $to);
         $messageStats = $this->getMessageStats($payload['messageStatsStartDate'], $payload['messageStatsEndDate']);
         $csAgents = $this->getCSAgentsData($responseTimeData, $payload['responseTimeDays']);
 
@@ -850,13 +853,16 @@ class DashboardController extends Controller
             $totalRatings = array_sum($ratingCounts);
             $positiveCount = $ratingCounts['puas'] + $ratingCounts['sangat puas'];
             $negativeCount = $ratingCounts['marah'] + $ratingCounts['sedih'];
+            $neutralCount = $ratingCounts['datar'];
             $positivePercentage = $totalRatings > 0 ? round(($positiveCount / $totalRatings) * 100, 2) : 0;
             $negativePercentage = $totalRatings > 0 ? round(($negativeCount / $totalRatings) * 100, 2) : 0;
+            $neutralPercentage = $totalRatings > 0 ? round(($neutralCount / $totalRatings) * 100, 2) : 0;
 
             return [
                 'ratingCounts' => $ratingCounts,
                 'positivePercentage' => $positivePercentage,
                 'negativePercentage' => $negativePercentage,
+                'neutralPercentage' => $neutralPercentage,
             ];
         });
 
@@ -958,11 +964,18 @@ class DashboardController extends Controller
     {
         $from = Carbon::now()->subDays($days)->startOfDay();
         $to = Carbon::now()->endOfDay();
+        return $this->getResponseTimeDataByRange($from, $to);
+    }
 
+    private function getResponseTimeDataByRange(Carbon $from, Carbon $to)
+    {
         // Optimasi: Cache hasil query response time untuk 10 menit
-        $cacheKey = 'response_time_data_' . $days . '_' . $from->format('Y-m-d') . '_' . $to->format('Y-m-d');
+        $cacheKey = 'response_time_data_' . $from->format('Y-m-d') . '_' . $to->format('Y-m-d');
 
-        return cache()->remember($cacheKey, 600, function () use ($from, $to, $days) {
+        return cache()->remember($cacheKey, 600, function () use ($from, $to) {
+            Log::info('Response Time Range (CTE): ' . $from . ' to ' . $to);
+
+            $bindings = ['start_date' => $from->toDateString(), 'end_date' => $to->toDateString()];
             Log::info('Response Time Range (CTE): ' . $from . ' to ' . $to);
 
             $bindings = ['start_date' => $from->toDateString(), 'end_date' => $to->toDateString()];
@@ -1060,7 +1073,7 @@ class DashboardController extends Controller
                 'slowCount' => (int) ($overall->slow_count ?? 0),
                 'avgResponseTime' => $avgResponseTime,
                 'agentResponseTimes' => $agentResponseTimes,
-                'responseTimeDays' => $days,
+                'responseTimeDays' => $from->diffInDays($to),
             ];
         });
     }
@@ -1429,12 +1442,10 @@ class DashboardController extends Controller
     {
         $chartStartDate = $request ? $request->get('chart_start_date') : null;
         $chartEndDate = $request ? $request->get('chart_end_date') : null;
+        $chartPeriod = $request ? $request->get('chart_period') : null;
 
         $today = Carbon::now()->endOfDay();
-        if (empty($chartStartDate) || empty($chartEndDate) || !$request) {
-            $startDate = Carbon::now()->subDays(90)->startOfDay();
-            $endDate = $today;
-        } else {
+        if (!empty($chartStartDate) && !empty($chartEndDate) && $request) {
             try {
                 $startDate = Carbon::parse($chartStartDate)->startOfDay();
                 $endDate = Carbon::parse($chartEndDate)->endOfDay();
@@ -1446,6 +1457,20 @@ class DashboardController extends Controller
                 $startDate = Carbon::now()->subDays(90)->startOfDay();
                 $endDate = $today;
             }
+        } elseif ($request && $chartPeriod === 'all') {
+            $earliestTimestamp = Message::whereNotNull('timestamp')->orderBy('timestamp', 'asc')->value('timestamp');
+            try {
+                $startDate = $earliestTimestamp ? Carbon::parse($earliestTimestamp)->startOfDay() : Carbon::now()->subDays(90)->startOfDay();
+            } catch (\Exception $e) {
+                $startDate = Carbon::now()->subDays(90)->startOfDay();
+            }
+            $endDate = $today;
+        } elseif ($request && in_array($chartPeriod, ['7', '30', '60', '90'], true)) {
+            $startDate = Carbon::now()->subDays((int) $chartPeriod)->startOfDay();
+            $endDate = $today;
+        } else {
+            $startDate = Carbon::now()->subDays(90)->startOfDay();
+            $endDate = $today;
         }
 
         if ($request && ($request->has('chart_start_date') || $request->has('chart_end_date'))) {
